@@ -15,7 +15,7 @@ app.use((req, res, next) => {
 });
 
 app.post("/api/auth/signup", (req, res) => {
-    
+
 })
 
 app.use((req, res) => {
@@ -23,3 +23,5 @@ app.use((req, res) => {
 });
 
 module.exports = app;
+
+// OK ok ok
