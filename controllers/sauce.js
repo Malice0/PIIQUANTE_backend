@@ -6,22 +6,17 @@ exports.createSauce = (req, res, next) => {
   const sauceObject = JSON.parse(req.body.sauce);
   delete sauceObject._id;
   delete sauceObject._userId;
-  const sauce = new Sauce ({
+  const sauce = new Sauce({
     ...sauceObject,
     userId: req.auth.userId,
-    imageUrl: `${req.protocol}://${req.get("host")}/image/${req.filename}`
+    imageUrl: `${req.protocol}://${req.get("host")}/images/${
+      req.file.filename
+    }`,
   });
-  sauce.save()
+  sauce
+    .save()
     .then(() => res.status(201).json({ message: "Sauce enregistré" }))
     .catch((error) => res.status(400).json({ error }));
-
-  // delete req.body._id;
-  // const sauce = new Sauce({
-  //   ...req.body,
-  // });
-  // sauce.save()
-  //   .then(() => res.status(201).json({ message: "objet ok" }))
-  //   .catch((error) => res.status(400).json({ error }));
 };
 
 exports.modifySauce = (req, res, next) => {

@@ -1,6 +1,7 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
+const path = require('path');
 
 const sauceRoutes = require("./route/sauce");
 const userRoutes = require("./route/user");
@@ -30,10 +31,8 @@ app.use((req, res, next) => {
 
 app.use(bodyParser.json());
 
-app.use("/api/sauce", sauceRoutes);
 app.use("/api/auth", userRoutes);
-app.use("/images", express.static(path.join(__dirname, "image")))
+app.use("/api/sauces", sauceRoutes);
+app.use("/images", express.static(path.join(__dirname, "images")));
 
 module.exports = app;
-
-// OK ok ok
