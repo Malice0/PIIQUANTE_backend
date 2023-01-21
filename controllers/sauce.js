@@ -1,8 +1,60 @@
 const Sauce = require("../models/Sauce");
 const fs = require("fs");
 
-exports.likeSauce = (req, res, next) => {};
+exports.likeSauce = (req, res, next) => {
+  Sauce.findOne({ _id: req.params.id })
+    .then((sauce) => {
+      if (req.body.like === 1) {
+        // like sauce
+        sauce.likes++;
+        sauce.usersLiked.push(req.body.userId);
+        sauce.save()
+          .then(() => res.status(201).json({ message: "sauce likée" }))
+          .catch((error) => res.status(401).json({ error }));
+      }
+      if (req.body.like === -1) {
+        sauce.dislikes++;
+        sauce.usersDisliked.push(req.body.userId);
+        sauce.save()
+          .then(() => res.status(201).json({ message: "Sauce dislikée" }))
+          .catch((error) => res.status(400).json({ error }));
+      }
+      if (req.body.like === 0) {
+        const findUsersDisliked = sauce.usersDisliked.find(
+          (user) => (user = req.body.userId)
+        );
+        if (findUsersDisliked) {
+          sauce.dislikes--;
+          sauce.usersDisliked.splice(
+            sauce.usersLiked.indexOf(req.body.userId),
+            1
+          );
+          sauce
+            .save()
+            .then(() => res.status(201).json({ message: "sauce délikée" }))
+            .catch((error) =>
+              res.status(401).json({ error, message: "usersDisliked" })
+            );
+        }
 
+        const findUsersLiked = sauce.usersLiked.find(
+          (user) => (user = req.body.userId)
+        );
+        if (findUsersLiked) {
+          sauce.likes--;
+          sauce.usersLiked.splice(sauce.usersLiked.indexOf(req.body.userId), 1);
+          sauce
+            .save()
+            .then(() => res.status(201).json({ message: "sauce délikée" }))
+            .catch((error) =>
+              res.status(401).json({ error, message: "usersLiked" })
+            );
+        }
+      }
+    })
+    .then(() => console.log(req.body.like))
+    .catch((error) => res.status(400).json({ error }));
+};
 
 exports.getOneSauce = (req, res, next) => {
   Sauce.findOne({ _id: req.params.id })
@@ -26,10 +78,6 @@ exports.createSauce = (req, res, next) => {
     imageUrl: `${req.protocol}://${req.get("host")}/images/${
       req.file.filename
     }`,
-    likes: "0",
-    dislikes: "0",
-    usersLiked: "[]",
-    usersDisliked: "[]",
   });
   sauce
     .save()
