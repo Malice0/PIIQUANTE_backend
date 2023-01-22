@@ -2,57 +2,34 @@ const Sauce = require("../models/Sauce");
 const fs = require("fs");
 
 exports.likeSauce = (req, res, next) => {
+  console.log(req.body);
   Sauce.findOne({ _id: req.params.id })
     .then((sauce) => {
       if (req.body.like === 1) {
-        // like sauce
-        sauce.likes++;
         sauce.usersLiked.push(req.body.userId);
-        sauce.save()
-          .then(() => res.status(201).json({ message: "sauce likée" }))
-          .catch((error) => res.status(401).json({ error }));
-      }
-      if (req.body.like === -1) {
-        sauce.dislikes++;
+      } else if (req.body.like === -1) {
         sauce.usersDisliked.push(req.body.userId);
-        sauce.save()
-          .then(() => res.status(201).json({ message: "Sauce dislikée" }))
-          .catch((error) => res.status(400).json({ error }));
-      }
-      if (req.body.like === 0) {
-        const findUsersDisliked = sauce.usersDisliked.find(
-          (user) => (user = req.body.userId)
-        );
-        if (findUsersDisliked) {
-          sauce.dislikes--;
-          sauce.usersDisliked.splice(
-            sauce.usersLiked.indexOf(req.body.userId),
-            1
-          );
-          sauce
-            .save()
-            .then(() => res.status(201).json({ message: "sauce délikée" }))
-            .catch((error) =>
-              res.status(401).json({ error, message: "usersDisliked" })
-            );
+      } else if (req.body.like === 0) {
+        if (sauce.usersLiked.includes(req.body.userId)) {
+          const userIdIndex = sauce.usersLiked.indexOf(req.body.userId);
+          sauce.usersLiked.splice(userIdIndex, 1);
         }
-
-        const findUsersLiked = sauce.usersLiked.find(
-          (user) => (user = req.body.userId)
-        );
-        if (findUsersLiked) {
-          sauce.likes--;
-          sauce.usersLiked.splice(sauce.usersLiked.indexOf(req.body.userId), 1);
-          sauce
-            .save()
-            .then(() => res.status(201).json({ message: "sauce délikée" }))
-            .catch((error) =>
-              res.status(401).json({ error, message: "usersLiked" })
-            );
+        if (sauce.usersDisliked.includes(req.body.userId)) {
+          const userIdDisliked = sauce.usersDisliked.indexOf(req.body.userId);
+          sauce.usersDisliked.splice(userIdDisliked, 1);
         }
       }
+      sauce.likes = sauce.usersLiked.length;
+      sauce.dislikes = sauce.usersDisliked.length;
+      sauce
+        .save()
+        .then(() =>
+          res.status(200).json({ message: "mise à jour likes, dislikes" })
+        )
+        .catch((error) => {
+          res.status(400).json({ error });
+        });
     })
-    .then(() => console.log(req.body.like))
     .catch((error) => res.status(400).json({ error }));
 };
 
